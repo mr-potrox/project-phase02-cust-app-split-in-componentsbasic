@@ -1,7 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import { getAll, post, put, deleteById } from './memdb.js'
 import './App.css';
+// Importing th CustomerList component from ./components/CustomerList.js
 import CustomerList from './components/CustomerList.js'
+// Importing th CustomerAddUpdateForm component from ./components/CustomerAddUpdateForm.js
 import CustomerAddUpdateForm from './components/CustomerAddUpdateForm.js'
 
 var initialState = {
@@ -18,53 +20,82 @@ function App(props) {
   const [formObject, setFormObject] = useState(blankCustomer);
   let mode = (formObject.id >= 0) ? 'Update' : 'Add';
   useEffect(() => { getCustomers() }, []);
+  // Declare the getCustomers() method.
   const getCustomers =  function(){
     setCustomers(initialState);
   }
+
+  // Declare the handleListClick() method.
   const handleListClick = function(item){
-    if (formObject.hasOwnProperty('name') && item.name !== formObject.name) {
+    // Checking if the user selected the same record from
+    // the customer list  twice or more
+    if (formObject.hasOwnProperty('id') && item.id != formObject.id) {
       setFormObject(item);
     }else{
+      // Cleaning up the adding form
       setFormObject(blankCustomer);
     }
   }  
 
+  // Declare the handleInputChange() method.
   const handleInputChange = function (event) {
     const name = event.target.name;
     const value = event.target.value;
     let newFormObject = {...formObject}
     newFormObject[name] = value;
+    // Cleaning up the add/edit form
     setFormObject(newFormObject);
   }
 
+  // Declare the onCancelClick() method.
   let onCancelClick = function () {
+    // Cleaning up the add/edit form
     setFormObject(blankCustomer);
   }
+  // Declare the onDeleteClick() method.
 
   let onDeleteClick = function () {
     if(formObject.id >= 0){
+    // Deleting the selected register from the Customelist
       deleteById(formObject.id);
     }
+    // Cleaning up the add/edit form
     setFormObject(blankCustomer);
   }
 
+  // Declare the onSaveClick() method.
   let onSaveClick = function () {
-    if (mode === 'Add') {
-      post(formObject);
+    // adding the nonempty records validation to avoid 
+    // the insertion of the blank record.
+    if (formObject.name.length === 0 && 
+      formObject.email.length === 0 && 
+      formObject.password.length === 0) {
+      alert('You must fill at least one field before you save the form');
     }
-    if (mode === 'Update') {
-      put(formObject.id, formObject);
+    else{
+      // Adding the new record send it by the user
+      if (mode === 'Add') {
+        // Adding the new register.
+        post(formObject);
+      }
+      if (mode === 'Update') {
+        // Saving the new data for the register that is being updated
+        put(formObject.id, formObject);
+      }
+      // Cleaning up the adding form
+      setFormObject(blankCustomer);
     }
-    setFormObject(blankCustomer);
   }
 
 
   return (
-    <div>
+    <React.Fragment>
+      {/* Render the CustomerList */}
       <CustomerList {... customers}
         formObject={formObject}
         handleListClick={handleListClick}/>
       <div className="boxed">
+        {/* Render the CustomerAddUpdateForm */}
       <CustomerAddUpdateForm formObject={formObject}
         mode={mode}
         handleInputChange={handleInputChange}
@@ -72,7 +103,7 @@ function App(props) {
         onSaveClick={onSaveClick}
         onCancelClick={onCancelClick}/>
       </div>
-    </div>
+    </React.Fragment>
   );
 }
 
