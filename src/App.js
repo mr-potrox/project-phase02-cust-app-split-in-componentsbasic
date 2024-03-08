@@ -18,6 +18,8 @@ function App(props) {
   let blankCustomer = { "id": -1, "name": "", "email": "", "password": "" };
   const [customers, setCustomers] = useState(initialState);
   const [formObject, setFormObject] = useState(blankCustomer);
+  const [isValidEmail, setIsValidEmail] = useState(true);
+
   let mode = (formObject.id >= 0) ? 'Update' : 'Add';
   useEffect(() => { getCustomers() }, []);
   // Declare the getCustomers() method.
@@ -41,6 +43,11 @@ function App(props) {
   const handleInputChange = function (event) {
     const name = event.target.name;
     const value = event.target.value;
+    if (name == 'email' && !validateEmail(formObject.email)) {
+      setIsValidEmail(false);
+    }else{
+      setIsValidEmail(true);
+    }
     let newFormObject = {...formObject}
     newFormObject[name] = value;
     // Cleaning up the add/edit form
@@ -65,15 +72,17 @@ function App(props) {
 
   // Declare the onSaveClick() method.
   let onSaveClick = function () {
+    // adding the nonempty records validation to avoid 
+    // the insertion of the blank record.
+    if (formObject.name.length === 0 && 
+      formObject.email.length === 0 && 
+      formObject.password.length === 0) {
+      alert('You must fill at least one field before you save the form');
+    }else{
     // Adding the email validation to avoid inserting wrong data.
-    if (validateEmail(formObject.email)) {
-      // adding the nonempty records validation to avoid 
-      // the insertion of the blank record.
-      if (formObject.name.length === 0 && 
-        formObject.email.length === 0 && 
-        formObject.password.length === 0) {
-        alert('You must fill at least one field before you save the form');
-      }
+      if (formObject.email.length !== 0 && !validateEmail(formObject.email)) {
+        alert("Enter correct email address!");
+      } 
       else{
         // Adding the new record send it by the user
         if (mode === 'Add') {
@@ -102,6 +111,7 @@ function App(props) {
       <CustomerAddUpdateForm formObject={formObject}
         mode={mode}
         handleInputChange={handleInputChange}
+        isValidEmail={isValidEmail}
         onDeleteClick={onDeleteClick}
         onSaveClick={onSaveClick}
         onCancelClick={onCancelClick}/>
